@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { createEngine } from './engine.js';
 import { createEffects } from './effects.js';
 import { scrollState, initScroll } from './scroll.js';
+import { initSandbox } from './sandbox.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { advanceTheta } from './kinematics.js';
 
@@ -96,7 +97,9 @@ function start() {
   }
   build(1);
 
-  const views = [stage];
+  const box = createView(document.getElementById('sandbox-canvas'));
+  const sandbox = initSandbox(box, document.getElementById('sandbox-ui'));
+  const views = [stage, box];
   addEventListener('resize', () => { views.forEach((v) => v.resize()); sizeLabels(); });
 
   let scroll = { state: scrollState(0), raw: -1 };
@@ -122,6 +125,7 @@ function start() {
       stage.render();
       if (!labelLayer.hidden) labels.render(stage.scene, stage.camera);
     }
+    if (box.visible) { sandbox.tick(dt); box.render(); }
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

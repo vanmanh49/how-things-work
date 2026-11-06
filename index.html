@@ -83,7 +83,30 @@
 
   <section id="sandbox" aria-label="Engine sandbox">
     <canvas id="sandbox-canvas" aria-label="Interactive 3D inline-4 engine"></canvas>
-    <div id="sandbox-ui"></div>
+    <div id="sandbox-ui">
+      <h2>Sandbox</h2>
+      <label for="rpm">Engine speed: <output id="rpm-out" for="rpm">1200</output> RPM</label>
+      <input type="range" id="rpm" min="0" max="6000" step="100" value="1200">
+      <p class="note">shown at 1/100 speed</p>
+      <div class="row">
+        <button id="step-back" type="button" aria-label="Step back 5 degrees">−5°</button>
+        <button id="play" type="button">Pause</button>
+        <button id="step-fwd" type="button" aria-label="Step forward 5 degrees">+5°</button>
+      </div>
+      <label class="check"><input type="checkbox" id="cutaway"> Cutaway (hide block)</label>
+      <fieldset id="cyl">
+        <legend>Cylinders</legend>
+        <label><input type="radio" name="cyl" value="1"> 1</label>
+        <label><input type="radio" name="cyl" value="4" checked> 4</label>
+      </fieldset>
+      <pre id="readout"></pre>
+      <p class="note">Drag to orbit · click a part to learn about it</p>
+    </div>
+    <aside id="part-card" hidden aria-live="polite">
+      <button type="button" aria-label="Close">×</button>
+      <h3></h3>
+      <p></p>
+    </aside>
   </section>
 </body>
 </html>

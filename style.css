@@ -49,6 +49,30 @@ canvas { display: block; width: 100%; height: 100%; }
 a { color: var(--accent); }
 
 #sandbox { position: relative; height: 100vh; border-top: 1px solid var(--panel); }
+#sandbox-ui, #part-card {
+  position: absolute; top: 16px; width: 260px; padding: 16px;
+  background: rgba(30, 41, 59, .92); border-radius: 8px;
+}
+#sandbox-ui { left: 16px; }
+#sandbox-ui h2 { font-size: 1.3rem; }
+#sandbox-ui input[type=range] { width: 100%; }
+#sandbox-ui .note { margin: .2em 0 .8em; }
+#sandbox-ui label { display: block; }
+.row { display: flex; gap: 8px; margin-bottom: .8em; }
+button {
+  font: inherit; color: var(--text); background: #334155; border: 1px solid var(--muted);
+  border-radius: 6px; padding: 4px 12px; cursor: pointer;
+}
+button:hover { background: #475569; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#play { flex: 1; }
+fieldset { border: 1px solid #475569; border-radius: 6px; margin: .8em 0; display: flex; gap: 1em; }
+fieldset label { display: inline !important; }
+#readout { font: 14px/1.5 ui-monospace, monospace; margin: 0; white-space: pre; }
+#part-card { right: 16px; }
+#part-card h3 { margin: 0 1.5em .4em 0; }
+#part-card p { margin: 0; }
+#part-card button { position: absolute; top: 8px; right: 8px; padding: 0 8px; }
 
 @media (max-width: 768px) {
   #story { display: block; }
@@ -57,4 +81,5 @@ a { color: var(--accent); }
   #hero, .panel { min-height: 80vh; }
   #sandbox { height: auto; }
   #sandbox-canvas { height: 60vh; }
+  #sandbox-ui, #part-card { position: static; width: auto; margin: 16px; }
 }
