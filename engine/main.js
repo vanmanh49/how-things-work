@@ -5,6 +5,8 @@ import { scrollState, initScroll } from './scroll.js';
 import { initSandbox } from './sandbox.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { advanceTheta } from './kinematics.js';
+import { hasWebGL, createView } from '../core/view.js';
+import { startLoop } from '../core/loop.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ?theta=N pins the crank angle (used for screenshots).
@@ -18,20 +20,8 @@ const LABELS = {
   camshaft: ['Camshaft', 'left', 0], sparkPlug: ['Spark plug', 'right', 1.5],
 };
 
-function hasWebGL() {
-  try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
-  } catch { return false; }
-}
-
-function createView(canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.setClearColor(0x0f172a);
-
-  const scene = new THREE.Scene();
+// Engine lighting: soft sky fill plus a shadow-casting key light.
+function addLights(scene) {
   scene.add(new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 1.2));
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.set(30, 60, 40);
@@ -39,24 +29,6 @@ function createView(canvas) {
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 50, bottom: -20 });
   scene.add(sun);
-
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 500);
-
-  const view = {
-    scene, camera, renderer, visible: true,
-    resize() {
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      if (!w || !h) return;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.fov = camera.aspect < 1 ? Math.min(75, 40 / camera.aspect) : 40;   // keep width in frame on portrait screens
-      camera.updateProjectionMatrix();
-    },
-    render() { renderer.render(scene, camera); },
-  };
-  new IntersectionObserver(([e]) => { view.visible = e.isIntersecting; }).observe(canvas);
-  view.resize();
-  return view;
 }
 
 function start() {
@@ -68,6 +40,7 @@ function start() {
   }
 
   const stage = createView(document.getElementById('stage-canvas'));
+  addLights(stage.scene);
   const NEAR = new THREE.Vector3(42, 30, 62), FAR = new THREE.Vector3(70, 46, 104), LOOK = new THREE.Vector3(0, 14, 0);
   const placeCamera = (t) => { stage.camera.position.lerpVectors(NEAR, FAR, t); stage.camera.lookAt(LOOK); };
   placeCamera(0);
@@ -99,18 +72,14 @@ function start() {
   build(1);
 
   const box = createView(document.getElementById('sandbox-canvas'));
+  addLights(box.scene);
   const sandbox = initSandbox(box, document.getElementById('sandbox-ui'));
-  const views = [stage, box];
-  addEventListener('resize', () => { views.forEach((v) => v.resize()); sizeLabels(); });
 
   let scroll = { state: scrollState(0), raw: -1 };
   initScroll(document.getElementById('walkthrough'), (state, raw) => { scroll = { state, raw }; });
 
   let theta = 0;
-  let last = performance.now();
-  function frame(now) {
-    const dt = (now - last) / 1000;
-    last = now;
+  startLoop([stage, box, { resize: sizeLabels }], (dt) => {
     if (stage.visible) {
       const { state, raw } = scroll;
       const inHero = raw < 0;
@@ -127,9 +96,7 @@ function start() {
       if (!labelLayer.hidden) labels.render(stage.scene, stage.camera);
     }
     if (box.visible) { sandbox.tick(dt); box.render(); }
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+  });
 }
 
 start();

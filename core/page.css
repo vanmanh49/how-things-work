@@ -44,7 +44,6 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .panel.active { opacity: 1; }
 .panel .num { color: var(--accent); font-weight: 600; }
-.parts-list { padding-left: 1.1em; }
 .note { color: var(--muted); font-size: .9em; }
 a { color: var(--accent); }
 
@@ -82,4 +81,29 @@ fieldset label { display: inline !important; }
   #sandbox { height: auto; }
   #sandbox-canvas { height: 60vh; }
   #sandbox-ui, #part-card { position: static; width: auto; margin: 16px; }
+}
+
+/* Top bar (every page) */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 16px; background: rgba(15, 23, 42, .92); border-bottom: 1px solid var(--panel);
+}
+.topbar a { color: var(--text); font-weight: 700; text-decoration: none; }
+.topbar select { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--muted); border-radius: 6px; padding: 2px 8px; }
+body:has(.topbar) #stage { top: 45px; height: calc(100vh - 45px); }
+
+/* Home page */
+.home { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.card {
+  display: block; background: var(--panel); border-radius: 10px; overflow: hidden;
+  color: var(--text); text-decoration: none; border: 1px solid transparent;
+}
+.card:hover, .card:focus-visible { border-color: var(--accent); }
+.card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--bg); }
+.card h2 { margin: 12px 16px 4px; font-size: 1.2rem; }
+.card .meta { margin: 0 16px 16px; color: var(--muted); font-size: .9rem; }
+@media (max-width: 768px) {
+  body:has(.topbar) #stage { height: 50vh; }
 }
