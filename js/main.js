@@ -1,12 +1,21 @@
 import * as THREE from 'three';
 import { createEngine } from './engine.js';
 import { createEffects } from './effects.js';
+import { scrollState, initScroll } from './scroll.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { advanceTheta } from './kinematics.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ?theta=N pins the crank angle (used for screenshots).
 const pinned = new URLSearchParams(location.search).get('theta');
 const pinnedTheta = pinned === null || isNaN(+pinned) ? null : +pinned;
+
+// Part labels shown during "Meet the parts": [text, nudge side, local y offset on the anchor mesh].
+const LABELS = {
+  piston: ['Piston', 'right', 0], rod: ['Connecting rod', 'right', 7], crankshaft: ['Crankshaft', 'right', 0],
+  intakeValve: ['Intake valve', 'left', 0], exhaustValve: ['Exhaust valve', 'right', 0],
+  camshaft: ['Camshaft', 'left', 0], sparkPlug: ['Spark plug', 'right', 1.5],
+};
 
 function hasWebGL() {
   try {
@@ -57,14 +66,41 @@ function start() {
   }
 
   const stage = createView(document.getElementById('stage-canvas'));
-  stage.camera.position.set(42, 30, 62);
-  stage.camera.lookAt(0, 14, 0);
-  let engine = createEngine(1);
-  let effects = createEffects(engine);
-  stage.scene.add(engine.group, effects.group);
+  const NEAR = new THREE.Vector3(42, 30, 62), FAR = new THREE.Vector3(70, 46, 104), LOOK = new THREE.Vector3(0, 14, 0);
+  const placeCamera = (t) => { stage.camera.position.lerpVectors(NEAR, FAR, t); stage.camera.lookAt(LOOK); };
+  placeCamera(0);
+
+  const labelLayer = document.getElementById('labels');
+  const labels = new CSS2DRenderer({ element: labelLayer });
+  const sizeLabels = () => labels.setSize(labelLayer.clientWidth, labelLayer.clientHeight);
+  sizeLabels();
+
+  // Builds engine + effects (+ part labels on cylinder 1) for n cylinders; disposes the old ones.
+  let engine, effects;
+  function build(n) {
+    engine?.dispose(); effects?.dispose();
+    labelLayer.replaceChildren();
+    engine = createEngine(n);
+    effects = createEffects(engine);
+    stage.scene.add(engine.group, effects.group);
+    const anchors = engine.group.userData.labelAnchors;
+    for (const [id, [text, side, y]] of Object.entries(LABELS)) {
+      if (!anchors[id]) continue;
+      const el = document.createElement('div');
+      el.className = `label ${side}`;
+      el.innerHTML = `<span>${text}</span>`;
+      const obj = new CSS2DObject(el);
+      obj.position.y = y;
+      anchors[id].add(obj);
+    }
+  }
+  build(1);
 
   const views = [stage];
-  addEventListener('resize', () => views.forEach((v) => v.resize()));
+  addEventListener('resize', () => { views.forEach((v) => v.resize()); sizeLabels(); });
+
+  let scroll = { state: scrollState(0), raw: -1 };
+  initScroll(document.getElementById('walkthrough'), (state, raw) => { scroll = { state, raw }; });
 
   let theta = 0;
   let last = performance.now();
@@ -72,11 +108,19 @@ function start() {
     const dt = (now - last) / 1000;
     last = now;
     if (stage.visible) {
+      const { state, raw } = scroll;
+      const inHero = raw < 0;
+      const cylinders = inHero ? 1 : state.cylinders;
+      if (cylinders !== engine.cylinders) build(cylinders);
       if (pinnedTheta !== null) theta = pinnedTheta;
-      else if (!reducedMotion) theta = advanceTheta(theta, 600, dt);
+      else if (inHero) { if (!reducedMotion) theta = advanceTheta(theta, 600, dt); }
+      else theta = state.theta;
+      placeCamera(!inHero && state.step === 'multi' ? Math.min(1, state.stepProgress / 0.4) : 0);
+      labelLayer.hidden = inHero || state.step !== 'parts';
       engine.update(theta);
       effects.update(theta);
       stage.render();
+      if (!labelLayer.hidden) labels.render(stage.scene, stage.camera);
     }
     requestAnimationFrame(frame);
   }

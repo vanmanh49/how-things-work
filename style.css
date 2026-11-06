@@ -24,6 +24,14 @@ canvas { display: block; width: 100%; height: 100%; }
 
 #story { display: grid; grid-template-columns: 60% 40%; }
 #stage { position: sticky; top: 0; height: 100vh; }
+#labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.label span {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  background: rgba(15, 23, 42, .85); border: 1px solid var(--muted);
+  font-size: 13px; white-space: nowrap; color: var(--text);
+}
+.label.left span { transform: translateX(-80%); }
+.label.right span { transform: translateX(80%); }
 #content { padding: 0 2rem; }
 
 #hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
@@ -36,6 +44,9 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .panel.active { opacity: 1; }
 .panel .num { color: var(--accent); font-weight: 600; }
+.parts-list { padding-left: 1.1em; }
+.note { color: var(--muted); font-size: .9em; }
+a { color: var(--accent); }
 
 #sandbox { position: relative; height: 100vh; border-top: 1px solid var(--panel); }
 
