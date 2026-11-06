@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { hasWebGL, createView } from '../core/view.js';
 import { startLoop } from '../core/loop.js';
 import { sliceProgress, initScroll } from '../core/scroll.js';
-import { createSystem, createLabels, renderMoonInset } from './scene.js';
+import { createSystem, createLabels, renderMoonInset, SUN_LAYER } from './scene.js';
 import { initSandbox } from './sandbox.js';
 import {
   YEAR, SYNODIC, advanceTime, dayLength, noonAltitude, phaseName, illuminatedFraction, eclipseAt,
@@ -55,6 +55,7 @@ function start() {
   const canvas = document.getElementById('stage-canvas');
   const stage = createView(canvas);
   stage.camera.far = 1000; stage.camera.updateProjectionMatrix();
+  stage.camera.layers.enable(SUN_LAYER);
   const system = createSystem();
   stage.scene.add(system.group);
 
@@ -82,7 +83,8 @@ function start() {
     else t = st.t;
 
     system.update(t, { lat: PIN_LAT });
-    system.setShadowCone(eclipseAt(t));
+    const ecl = eclipseAt(t);
+    system.setShadowCone(ecl);
     system.setSunLine(!inHero && st.camera === 'eclipseSide');
 
     // Ease the camera toward its preset (snap under reduced motion).
@@ -100,7 +102,7 @@ function start() {
     }
 
     stage.render();
-    if (st.inset === 'moonView') renderMoonInset(stage, system, insetBox);
+    if (st.inset === 'moonView') renderMoonInset(stage, system, insetBox, ecl);
     labelLayer.hidden = !st.labels;
     if (st.labels) labels.render(stage.scene, stage.camera);
   });

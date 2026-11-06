@@ -8,6 +8,7 @@ import {
 
 const RAD = Math.PI / 180;
 const SUN_R = 10, EARTH_R = 2, EARTH_ORBIT = 60, MOON_R = 0.6, MOON_ORBIT = 8;
+export const SUN_LAYER = 1;
 const DRAWN_INCL = 3 * MOON_INCL;   // drawn 3× larger so the tilt is visible; same sign as the real one
 
 const dir = (lonDeg, out = new THREE.Vector3()) => out.set(Math.cos(lonDeg * RAD), 0, -Math.sin(lonDeg * RAD));
@@ -55,6 +56,7 @@ export function createSystem() {
 
   // Sun: the only real light source, so day/night and Moon phases come from actual lighting.
   const sun = pick(new THREE.Mesh(new THREE.SphereGeometry(SUN_R, 48, 32), new THREE.MeshBasicMaterial({ color: 0xfdb813 })), 'sun');
+  sun.layers.set(SUN_LAYER);   // main cameras show it; the Moon-view inset only during a solar eclipse
   const light = new THREE.PointLight(0xffffff, 3, 0, 0);
   group.add(sun, light, new THREE.AmbientLight(0xffffff, 0.06));
 
@@ -179,10 +181,12 @@ export function createLabels(system, layer) {
 }
 
 // "View from Earth" inset: a second camera on Earth's surface looking at the Moon, drawn with
-// scissor into the rectangle of `box` (an element positioned over the canvas).
+// scissor into the rectangle of `box` (an element positioned over the canvas). The drawn Sun is far
+// bigger than the real one, so it is shown only during a solar eclipse; otherwise every new Moon would
+// look like an eclipse.
 const moonCam = new THREE.PerspectiveCamera(14, 1, 0.05, 50);
 const towardMoon = new THREE.Vector3();
-export function renderMoonInset(view, system, box) {
+export function renderMoonInset(view, system, box, eclipse) {
   const canvas = view.renderer.domElement, r = view.renderer;
   const c = canvas.getBoundingClientRect(), b = box.getBoundingClientRect();
   const x = b.left - c.left, y = c.bottom - b.bottom, w = b.width, h = b.height;
@@ -190,6 +194,7 @@ export function renderMoonInset(view, system, box) {
   moonCam.position.copy(system.earth.position).addScaledVector(towardMoon, EARTH_R + 0.1);
   moonCam.lookAt(system.moon.position);
   moonCam.aspect = w / h; moonCam.updateProjectionMatrix();
+  if (eclipse === 'solar') moonCam.layers.enable(SUN_LAYER); else moonCam.layers.disable(SUN_LAYER);
   r.setScissorTest(true);
   r.setScissor(x, y, w, h); r.setViewport(x, y, w, h);
   r.setClearColor(0x020617); r.clear();

@@ -1,7 +1,7 @@
 // Free-explore sandbox: speed, play/pause, stepping, jump-to-event, latitude, toggles, click-a-body cards.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { createSystem, createLabels, renderMoonInset } from './scene.js';
+import { createSystem, createLabels, renderMoonInset, SUN_LAYER } from './scene.js';
 import {
   YEAR, advanceTime, nextEvent, speedFromSlider, phaseName, illuminatedFraction, dayLength, noonAltitude,
   seasonNorth, seasonSouth, eclipseAt,
@@ -18,6 +18,7 @@ export function initSandbox(view, ui) {
   const paths = $('paths'), labelsToggle = $('labels-toggle'), moonInset = $('moon-inset');
 
   view.camera.far = 1000; view.camera.updateProjectionMatrix();
+  view.camera.layers.enable(SUN_LAYER);
   const system = createSystem();
   view.scene.add(system.group);
   const labelLayer = $('sandbox-labels');
@@ -94,7 +95,7 @@ export function initSandbox(view, ui) {
     inset.hidden = !moonInset.checked;
     if (moonInset.checked) {
       insetLabel.textContent = `Seen from Earth: ${phaseName(t)}`;
-      renderMoonInset(view, system, inset);
+      renderMoonInset(view, system, inset, ecl);
     }
     labelLayer.hidden = !labelsToggle.checked;
     if (labelsToggle.checked) labels.render(view.scene, view.camera);
