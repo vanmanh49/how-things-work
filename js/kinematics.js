@@ -35,3 +35,10 @@ export const cylinderPhase = (i, order = FIRING_ORDER) => 180 * order.indexOf(i)
 // Animation runs at rpm/100 → 0.06·rpm °/s. dt clamped so a hidden tab can't jump the engine.
 export const advanceTheta = (theta, rpm, dtSeconds) =>
   wrapTheta(theta + rpm * 0.06 * Math.min(dtSeconds, 0.1));
+
+// Cam lobe profile (mm). psi = cam-frame angle from the lobe nose, in cam degrees (cam turns at ½ crank),
+// so the radius facing the stem always equals base + the lift the valve has at that crank angle.
+export function camRadius(psi, win, rBase = 0) {
+  const p = ((psi % 360) + 540) % 360 - 180;
+  return rBase + valveLift((win[0] + win[1]) / 2 + 2 * p, win);
+}

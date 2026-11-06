@@ -91,6 +91,7 @@ export function createEffects(engine) {
   }
 
   function dispose() {
+    flows.forEach((m) => m.dispose());   // frees the instanceMatrix GPU buffer; traverse alone doesn't
     group.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
     group.removeFromParent();
   }

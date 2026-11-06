@@ -14,7 +14,7 @@ const pinnedTheta = pinned === null || isNaN(+pinned) ? null : +pinned;
 // Part labels shown during "Meet the parts": [text, nudge side, local y offset on the anchor mesh].
 const LABELS = {
   piston: ['Piston', 'right', 0], rod: ['Connecting rod', 'right', 7], crankshaft: ['Crankshaft', 'right', 0],
-  intakeValve: ['Intake valve', 'left', 0], exhaustValve: ['Exhaust valve', 'right', 0],
+  intakeValve: ['Intake valve', 'right', 0], exhaustValve: ['Exhaust valve', 'left', 0],   // intake (blue, z−) shows on screen-right from this camera
   camshaft: ['Camshaft', 'left', 0], sparkPlug: ['Spark plug', 'right', 1.5],
 };
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   STROKE, R, L, MAX_LIFT, INTAKE, EXHAUST,
-  wrapTheta, pistonY, valveLift, strokeAt, cylinderPhase, advanceTheta,
+  wrapTheta, pistonY, valveLift, strokeAt, cylinderPhase, advanceTheta, camRadius,
 } from '../js/kinematics.js';
 
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≠ ${b}`);
@@ -57,4 +57,12 @@ test('advanceTheta: 6000 RPM shows 360°/s, rpm 0 stays, dt clamped to 0.1 s', (
   assert.equal(advanceTheta(100, 0, 0.5), 100);
   close(advanceTheta(0, 6000, 30), 36); // 30 s hidden tab → only 0.1 s applied
   close(advanceTheta(719, 6000, 0.1), 35);
+});
+
+test('cam profile: lobe radius facing the stem = base + valve lift at every crank angle', () => {
+  for (const win of [INTAKE, EXHAUST]) {
+    const mid = (win[0] + win[1]) / 2;
+    for (let t = 0; t < 720; t += 1) close(camRadius((t - mid) / 2, win), valveLift(t, win));
+  }
+  close(camRadius(0, INTAKE, 10), 10 + MAX_LIFT);
 });

@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import {
   BORE, R, L, CR, STROKE, INTAKE, EXHAUST,
-  wrapTheta, pistonY, valveLift, cylinderPhase,
+  wrapTheta, pistonY, valveLift, cylinderPhase, camRadius,
 } from './kinematics.js';
 
 const U = 0.1;                     // mm → units
@@ -13,12 +13,32 @@ const PIN_TO_TOP = 4.5;            // piston pin → crown
 const TDC_TOP = pistonY(0) * U + PIN_TO_TOP;
 const HEAD_Y = TDC_TOP + (STROKE * U) / (CR - 1);   // clearance volume gives 10:1
 const VALVE_Z = 2;
-const CAM_Y = HEAD_Y + 7.5;
+const STEM_TOP = -0.2 + 3.4 + 3.25;   // closed-valve stem tip above HEAD_Y (disc offset + stem centre + half stem)
+const CAM_BASE = 1.0;                 // lobe base-circle radius, units
+const CAM_Y = HEAD_Y + STEM_TOP + CAM_BASE;   // base circle just touches the closed stem
 
 const COLORS = {
   piston: 0xcbd5e1, rod: 0x64748b, crankshaft: 0x475569, intakeValve: 0x60a5fa,
   exhaustValve: 0xf87171, camshaft: 0xa78bfa, sparkPlug: 0xf5f5f4, block: 0x94a3b8,
 };
+
+// Lobe outline from camRadius, so the face touching the stem is exactly base + valve lift.
+// Shape is drawn with the nose (ψ = 0) toward −y, extruded, then turned so the cam axis is x.
+function lobeGeometry(win) {
+  const shape = new THREE.Shape();
+  for (let k = 0; k <= 128; k++) {
+    const psi = (k / 128) * 360;
+    const r = CAM_BASE + camRadius(psi, win) * U;
+    const a = psi * RAD;
+    const x = r * Math.sin(a), y = -r * Math.cos(a);
+    k ? shape.lineTo(x, y) : shape.moveTo(x, y);
+  }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: 1.6, bevelEnabled: false, curveSegments: 1 });
+  geo.translate(0, 0, -0.8);
+  geo.rotateY(Math.PI / 2);
+  geo.computeVertexNormals();
+  return geo;
+}
 
 export const ENGINE_DIMS = { HEAD_Y, TDC_TOP, PIN_TO_TOP, BORE_UNITS: BORE * U, VALVE_Z, SPACING };
 
@@ -95,9 +115,7 @@ export function createEngine(cylinders) {
 
     // Lobe vector starts at -y; offset so net cam angle is 0 when local θ = window midpoint.
     valves.forEach(({ win }, k) => {
-      const lobe = mesh(new THREE.CylinderGeometry(1.4, 1.4, 1.6, 24), 'camshaft', i);
-      lobe.rotation.z = Math.PI / 2;
-      lobe.position.y = -0.7;
+      const lobe = mesh(lobeGeometry(win), 'camshaft', i);
       const holder = new THREE.Group();
       holder.position.x = x;
       holder.rotation.x = -((win[0] + win[1]) / 2 + phase) / 2 * RAD;
