@@ -7,6 +7,7 @@ import {
   seasonNorth, seasonSouth, eclipseAt,
 } from './orbits.js';
 import { BODIES } from './bodies.js';
+import { bindPicking, createCard } from '../core/cards.js';
 
 const latText = (lat) => (lat === 0 ? '0°' : `${Math.abs(lat)}°${lat > 0 ? 'N' : 'S'}`);
 const speedText = (dps) => (dps < 1 ? `${(dps * 24).toFixed(1)} hours per second` : `${dps.toFixed(1)} days per second`);
@@ -14,7 +15,7 @@ const speedText = (dps) => (dps < 1 ? `${(dps * 24).toFixed(1)} hours per second
 export function initSandbox(view, ui) {
   const $ = (id) => document.getElementById(id);
   const speed = $('speed'), speedOut = $('speed-out'), play = $('play'), lat = $('lat'), latOut = $('lat-out');
-  const readout = $('readout'), card = $('part-card'), inset = $('sandbox-inset'), insetLabel = inset.querySelector('.inset-label');
+  const readout = $('readout'), inset = $('sandbox-inset'), insetLabel = inset.querySelector('.inset-label');
   const paths = $('paths'), labelsToggle = $('labels-toggle'), moonInset = $('moon-inset');
 
   view.camera.far = 1000; view.camera.updateProjectionMatrix();
@@ -48,24 +49,11 @@ export function initSandbox(view, ui) {
   paths.addEventListener('change', () => system.setPaths(paths.checked));
 
   // Click (not drag) a body → info card. Escape or clicking empty space closes it.
-  const closeCard = () => { card.hidden = true; };
-  card.querySelector('button').addEventListener('click', closeCard);
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCard(); });
-  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), canvas = view.renderer.domElement;
-  let down = null;
-  canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
-  canvas.addEventListener('pointerup', (e) => {
-    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, view.camera);
-    const hit = ray.intersectObjects(system.parts, false)[0];
-    if (!hit) return closeCard();
-    const body = BODIES[hit.object.userData.bodyId];
-    card.querySelector('h3').textContent = body.name;
-    card.querySelector('p').textContent = body.text;
-    card.hidden = false;
-  });
+  const card = createCard($('part-card'));
+  bindPicking(view.renderer.domElement, view.camera, () => system.parts, (hits) => {
+    const body = BODIES[hits[0].object.userData.bodyId];
+    card.show(body.name, body.text);
+  }, () => card.hide());
 
   let lastText = '';
   function tick(dt) {

@@ -1,17 +1,17 @@
 // Free-explore sandbox: RPM, play/pause, stepping, cutaway, 1/4 cylinders, click-a-part cards.
-import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createEngine } from './engine.js';
 import { createEffects } from './effects.js';
 import { advanceTheta, wrapTheta, strokeAt, cylinderPhase } from './kinematics.js';
 import { PARTS } from './parts.js';
+import { bindPicking, createCard } from '../core/cards.js';
 
 const HIGHLIGHT = 0x664400;
 
 export function initSandbox(view, ui) {
   const $ = (id) => document.getElementById(id);
   const rpmInput = $('rpm'), rpmOut = $('rpm-out'), play = $('play'), cutaway = $('cutaway');
-  const readout = $('readout'), card = $('part-card');
+  const readout = $('readout');
 
   view.camera.position.set(50, 34, 76);
   const controls = new OrbitControls(view.camera, view.renderer.domElement);
@@ -31,7 +31,7 @@ export function initSandbox(view, ui) {
     effects = createEffects(engine);
     engine.setCutaway(cutaway.checked);
     view.scene.add(engine.group, effects.group);
-    closeCard();
+    card.hide();
   }
 
   const setPlaying = (on) => { playing = on; play.textContent = on ? 'Pause' : 'Play'; };
@@ -44,36 +44,17 @@ export function initSandbox(view, ui) {
   cutaway.addEventListener('change', () => engine.setCutaway(cutaway.checked));
   ui.querySelectorAll('input[name="cyl"]').forEach((r) => r.addEventListener('change', () => build(+r.value)));
 
-  function closeCard() {
-    card.hidden = true;
-    highlighted.forEach((m) => m.material.emissive.setHex(0));
-    highlighted = [];
-  }
-  card.querySelector('button').addEventListener('click', closeCard);
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCard(); });
-
-  // Click (not drag) → raycast. The translucent block is skipped when something solid is behind it.
-  const ray = new THREE.Raycaster();
-  const ndc = new THREE.Vector2();
-  let down = null;
-  const canvas = view.renderer.domElement;
-  canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
-  canvas.addEventListener('pointerup', (e) => {
-    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 4) return;
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, view.camera);
-    const hits = ray.intersectObjects(engine.parts.filter((m) => m.visible), false);
+  const clearHighlight = () => { highlighted.forEach((m) => m.material.emissive.setHex(0)); highlighted = []; };
+  const card = createCard($('part-card'), { onHide: clearHighlight });
+  // The translucent block is skipped when something solid is behind it.
+  bindPicking(view.renderer.domElement, view.camera, () => engine.parts.filter((m) => m.visible), (hits) => {
     const hit = hits.find((h) => h.object.userData.partId !== 'block') ?? hits[0];
-    closeCard();
-    if (!hit) return;
+    card.hide();
     const { partId, cylinder } = hit.object.userData;
     highlighted = engine.parts.filter((m) => m.userData.partId === partId && m.userData.cylinder === cylinder && m.material.emissive);
     highlighted.forEach((m) => m.material.emissive.setHex(HIGHLIGHT));
-    card.querySelector('h3').textContent = PARTS[partId].name + (cylinder && engine.cylinders > 1 ? ` (cylinder ${cylinder})` : '');
-    card.querySelector('p').textContent = PARTS[partId].text;
-    card.hidden = false;
-  });
+    card.show(PARTS[partId].name + (cylinder && engine.cylinders > 1 ? ` (cylinder ${cylinder})` : ''), PARTS[partId].text);
+  }, () => card.hide());
 
   let lastText = '';
   function tick(dt) {
