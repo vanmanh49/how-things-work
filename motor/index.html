@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electric Motor · How Things Work</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../core/page.css">
+  <link rel="stylesheet" href="motor.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <nav class="topbar"><a href="../">How Things Work</a>
+    <select aria-label="Choose a topic" autocomplete="off" onchange="if (this.value) location.href = this.value">
+      <option value="../engine/">4-Stroke Engine</option>
+      <option value="../solar/">Sun, Earth &amp; Moon</option>
+      <option value="../motor/" selected>Electric Motor</option>
+    </select>
+  </nav>
+
+  <div id="no-webgl" hidden>
+    <p>Your browser can't show 3D graphics. Here's a diagram instead.</p>
+    <svg viewBox="0 0 400 200" role="img" aria-label="A coil between the N and S poles of a magnet. Current flows along the coil sides and the force pushes one side up and the other down.">
+      <defs>
+        <marker id="fb-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#facc15"/></marker>
+        <marker id="fb-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
+        <marker id="fb-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22c55e"/></marker>
+      </defs>
+      <rect x="20" y="40" width="60" height="120" rx="6" fill="#ef4444"/><text x="50" y="106" text-anchor="middle" font-size="28" fill="#fff">N</text>
+      <rect x="320" y="40" width="60" height="120" rx="6" fill="#3b82f6"/><text x="350" y="106" text-anchor="middle" font-size="28" fill="#fff">S</text>
+      <g stroke="#facc15" stroke-width="2" marker-end="url(#fb-y)">
+        <line x1="90" y1="60" x2="310" y2="60"/><line x1="90" y1="100" x2="310" y2="100"/><line x1="90" y1="140" x2="310" y2="140"/>
+      </g>
+      <rect x="130" y="80" width="140" height="40" fill="none" stroke="#b87333" stroke-width="6"/>
+      <g stroke="#f97316" stroke-width="3" marker-end="url(#fb-o)">
+        <line x1="150" y1="80" x2="200" y2="80"/><line x1="250" y1="120" x2="200" y2="120"/>
+      </g>
+      <g stroke="#22c55e" stroke-width="3" marker-end="url(#fb-g)">
+        <line x1="175" y1="76" x2="175" y2="30"/><line x1="225" y1="124" x2="225" y2="170"/>
+      </g>
+      <text x="200" y="195" text-anchor="middle" font-size="16" fill="currentColor">F = BIL</text>
+    </svg>
+  </div>
+
+  <div id="story">
+    <div id="stage">
+      <canvas id="stage-canvas" aria-label="3D model of a simple DC electric motor"></canvas>
+      <div id="labels" aria-hidden="true"></div>
+      <figure id="lhr" hidden aria-label="Fleming's left-hand rule">
+        <svg viewBox="0 0 220 200" role="img" aria-label="Left hand: first finger points along the field, second finger along the current, thumb gives the motion">
+          <defs>
+            <marker id="lh-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#facc15"/></marker>
+            <marker id="lh-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
+            <marker id="lh-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22c55e"/></marker>
+          </defs>
+          <path d="M70 120 q-10 -30 10 -45 l40 0 q20 10 15 45 q-5 30 -35 35 q-25 -5 -30 -35z" fill="#e8b68f" stroke="#a16207"/>
+          <g stroke-width="5" fill="none" stroke-linecap="round">
+            <line x1="100" y1="95" x2="190" y2="95" stroke="#facc15" marker-end="url(#lh-y)"/>
+            <line x1="100" y1="110" x2="45" y2="165" stroke="#f97316" marker-end="url(#lh-o)"/>
+            <line x1="95" y1="80" x2="95" y2="15" stroke="#22c55e" marker-end="url(#lh-g)"/>
+          </g>
+          <g font-size="12" fill="currentColor">
+            <text x="105" y="20">thuMb = Motion</text>
+            <text x="135" y="88">First = Field</text>
+            <text x="5" y="190">seCond = Current</text>
+          </g>
+        </svg>
+        <figcaption>Left-hand rule</figcaption>
+      </figure>
+      <div id="chart-box" hidden><canvas id="chart" aria-label="Chart of speed and current during spin-up"></canvas></div>
+    </div>
+    <main id="content">
+      <section id="hero">
+        <h1>Electric Motor</h1>
+        <p>How electricity and magnets make things spin — and back again.</p>
+        <p class="hint" aria-hidden="true">↓</p>
+      </section>
+      <section id="walkthrough">
+        <article class="panel" data-step="parts"><h2>Meet the motor</h2></article>
+        <article class="panel" data-step="force"><h2><span class="num">1.</span> A push on a wire</h2></article>
+        <article class="panel" data-step="commutator"><h2><span class="num">2.</span> The commutator</h2></article>
+        <article class="panel" data-step="backemf"><h2><span class="num">3.</span> Speed and back-EMF</h2></article>
+        <article class="panel" data-step="generator"><h2><span class="num">4.</span> Run it backwards: a generator</h2></article>
+        <article class="panel" data-step="ev"><h2><span class="num">5.</span> Motors in electric cars</h2></article>
+      </section>
+    </main>
+  </div>
+
+  <section id="sandbox" aria-label="Electric motor sandbox">
+    <canvas id="sandbox-canvas" aria-label="Interactive 3D electric motor"></canvas>
+    <div id="sandbox-ui">
+      <h2>Sandbox</h2>
+    </div>
+    <aside id="part-card" hidden aria-live="polite">
+      <button type="button" aria-label="Close">×</button>
+      <h3></h3>
+      <p></p>
+    </aside>
+  </section>
+</body>
+</html>
