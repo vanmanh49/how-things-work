@@ -18,10 +18,10 @@
   <script type="module" src="main.js"></script>
 </head>
 <body>
-  <nav class="topbar"><a href="/">How Things Work</a>
-    <select aria-label="Choose a topic" onchange="location.href=this.value">
-      <option value="/engine/">4-Stroke Engine</option>
-      <option value="/solar/" selected>Sun, Earth &amp; Moon</option>
+  <nav class="topbar"><a href="../">How Things Work</a>
+    <select aria-label="Choose a topic" autocomplete="off" onchange="if (this.value) location.href = this.value">
+      <option value="../engine/">4-Stroke Engine</option>
+      <option value="../solar/" selected>Sun, Earth &amp; Moon</option>
     </select>
   </nav>
 

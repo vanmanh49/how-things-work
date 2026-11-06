@@ -8,23 +8,23 @@
   <link rel="stylesheet" href="core/page.css">
 </head>
 <body>
-  <nav class="topbar"><a href="/">How Things Work</a>
-    <select aria-label="Choose a topic" onchange="location.href=this.value">
-      <option value="/" selected>Choose a topic…</option>
-      <option value="/engine/">4-Stroke Engine</option>
-      <option value="/solar/">Sun, Earth &amp; Moon</option>
+  <nav class="topbar"><a href="./">How Things Work</a>
+    <select aria-label="Choose a topic" autocomplete="off" onchange="if (this.value) location.href = this.value">
+      <option value="" selected>Choose a topic…</option>
+      <option value="engine/">4-Stroke Engine</option>
+      <option value="solar/">Sun, Earth &amp; Moon</option>
     </select>
   </nav>
   <main class="home">
     <h1>How Things Work</h1>
     <p>Interactive 3D explainers. Scroll through a guided story, then experiment in the sandbox.</p>
     <div class="cards">
-      <a class="card" href="/engine/">
+      <a class="card" href="engine/">
         <img src="assets/engine.png" alt="">
         <h2>4-Stroke Engine</h2>
         <p class="meta">Engineering · ~10 min</p>
       </a>
-      <a class="card" href="/solar/">
+      <a class="card" href="solar/">
         <img src="assets/solar.png" alt="">
         <h2>Sun, Earth &amp; Moon</h2>
         <p class="meta">Space · ~10 min</p>
