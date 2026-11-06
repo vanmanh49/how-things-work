@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sun, Earth &amp; Moon · How Things Work</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../core/page.css">
+  <link rel="stylesheet" href="solar.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <nav class="topbar"><a href="/">How Things Work</a>
+    <select aria-label="Choose a topic" onchange="location.href=this.value">
+      <option value="/engine/">4-Stroke Engine</option>
+      <option value="/solar/" selected>Sun, Earth &amp; Moon</option>
+    </select>
+  </nav>
+
+  <div id="no-webgl" hidden>
+    <p>Your browser can't show 3D graphics. Here's a diagram instead.</p>
+    <svg viewBox="0 0 400 170" role="img" aria-label="Earth's tilted axis points the same way all year: toward the Sun in June, away in December">
+      <g fill="currentColor" font-size="11" text-anchor="middle">
+        <circle cx="200" cy="80" r="22" fill="#fdb813"/>
+        <text x="200" y="125">Sun</text>
+        <g transform="translate(60 80)">
+          <circle r="16" fill="#2563eb"/><line x1="7" y1="-26" x2="-7" y2="26" stroke="currentColor" stroke-width="2"/>
+          <text y="45">June: north leans</text><text y="58">toward the Sun</text>
+        </g>
+        <g transform="translate(340 80)">
+          <circle r="16" fill="#2563eb"/><line x1="7" y1="-26" x2="-7" y2="26" stroke="currentColor" stroke-width="2"/>
+          <text y="45">December: north</text><text y="58">leans away</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <div id="story">
+    <div id="stage">
+      <canvas id="stage-canvas" aria-label="3D model of the Sun, Earth and Moon"></canvas>
+      <div id="labels" aria-hidden="true"></div>
+      <div id="inset-box" hidden><div id="inset-label"></div></div>
+    </div>
+    <main id="content">
+      <section id="hero">
+        <h1>Sun, Earth &amp; Moon</h1>
+        <p>Why days, seasons and Moon phases happen.</p>
+        <p class="hint" aria-hidden="true">↓</p>
+      </section>
+      <section id="walkthrough">
+        <article class="panel" data-step="system"><h2>Meet the system</h2></article>
+        <article class="panel" data-step="day"><h2>1. Day &amp; night</h2></article>
+        <article class="panel" data-step="seasons"><h2>2. Seasons</h2></article>
+        <article class="panel" data-step="phases"><h2>3. Moon phases</h2></article>
+        <article class="panel" data-step="eclipses"><h2>4. Eclipses</h2></article>
+      </section>
+    </main>
+  </div>
+
+  <section id="sandbox" aria-label="Sun, Earth and Moon sandbox">
+    <canvas id="sandbox-canvas" aria-label="Interactive 3D Sun, Earth and Moon"></canvas>
+    <div id="sandbox-ui"></div>
+    <aside id="part-card" hidden aria-live="polite">
+      <button type="button" aria-label="Close">×</button>
+      <h3></h3>
+      <p></p>
+    </aside>
+  </section>
+</body>
+</html>
