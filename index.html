@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How a 4-Stroke Engine Works</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div id="no-webgl" hidden>
+    <p>Your browser can't show 3D graphics. Here's a diagram of the four strokes instead.</p>
+    <svg viewBox="0 0 400 170" role="img" aria-label="The four strokes: intake, compression, power, exhaust">
+      <g font-size="12" fill="currentColor" text-anchor="middle">
+        <g transform="translate(50 0)"><rect x="-30" y="10" width="60" height="110" fill="none" stroke="currentColor"/><rect x="-28" y="80" width="56" height="20" fill="#94a3b8"/><rect x="-28" y="12" width="56" height="66" fill="#3b82f6" opacity=".5"/><text y="145">Intake</text><text y="160" font-size="10">piston down</text></g>
+        <g transform="translate(150 0)"><rect x="-30" y="10" width="60" height="110" fill="none" stroke="currentColor"/><rect x="-28" y="30" width="56" height="20" fill="#94a3b8"/><rect x="-28" y="12" width="56" height="16" fill="#facc15" opacity=".7"/><text y="145">Compression</text><text y="160" font-size="10">piston up</text></g>
+        <g transform="translate(250 0)"><rect x="-30" y="10" width="60" height="110" fill="none" stroke="currentColor"/><rect x="-28" y="80" width="56" height="20" fill="#94a3b8"/><rect x="-28" y="12" width="56" height="66" fill="#f97316" opacity=".7"/><text y="145">Power</text><text y="160" font-size="10">spark pushes it down</text></g>
+        <g transform="translate(350 0)"><rect x="-30" y="10" width="60" height="110" fill="none" stroke="currentColor"/><rect x="-28" y="30" width="56" height="20" fill="#94a3b8"/><rect x="-28" y="12" width="56" height="16" fill="#9ca3af" opacity=".7"/><text y="145">Exhaust</text><text y="160" font-size="10">piston up, gas out</text></g>
+      </g>
+    </svg>
+  </div>
+
+  <div id="story">
+    <div id="stage"><canvas id="stage-canvas" aria-label="3D model of a piston engine"></canvas></div>
+    <main id="content">
+      <section id="hero">
+        <h1>How a 4-Stroke Engine Works</h1>
+        <p>Scroll to take the engine apart, one stroke at a time.</p>
+        <p class="hint" aria-hidden="true">↓</p>
+      </section>
+      <section id="walkthrough">
+        <article class="panel" data-step="parts"><h2>Meet the parts</h2></article>
+        <article class="panel" data-step="intake"><h2>1. Intake</h2></article>
+        <article class="panel" data-step="compression"><h2>2. Compression</h2></article>
+        <article class="panel" data-step="power"><h2>3. Power</h2></article>
+        <article class="panel" data-step="exhaust"><h2>4. Exhaust</h2></article>
+        <article class="panel" data-step="multi"><h2>From 1 to 4 cylinders</h2></article>
+      </section>
+    </main>
+  </div>
+
+  <section id="sandbox" aria-label="Engine sandbox">
+    <canvas id="sandbox-canvas" aria-label="Interactive 3D inline-4 engine"></canvas>
+    <div id="sandbox-ui"></div>
+  </section>
+</body>
+</html>
