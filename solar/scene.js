@@ -82,9 +82,16 @@ export function createSystem() {
   group.add(moon, moonOrbitG);
 
   const orbitLabel = new THREE.Object3D(); orbitLabel.position.copy(dir(135).multiplyScalar(EARTH_ORBIT));
-  const moonOrbitLabel = new THREE.Object3D(); moonOrbitLabel.position.copy(moonOffset(300));
+  const moonOrbitLabel = new THREE.Object3D(); moonOrbitLabel.position.copy(moonOffset(60));
   moonOrbitG.add(moonOrbitLabel);
   group.add(orbitLabel);
+
+  // Sun line: from the Sun through Earth and beyond, so students can see the Moon pass above or below it.
+  const sunLineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+  const sunLine = new THREE.Line(sunLineGeo, new THREE.LineDashedMaterial({ color: 0xfde68a, dashSize: 1, gapSize: 0.6 }));
+  sunLine.visible = false;
+  sunLine.frustumCulled = false;   // its geometry changes every frame; stale bounds would cull it
+  group.add(sunLine);
 
   // Shadow cone: tip points away from the Sun; shown only during an eclipse.
   const cone = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 32, 1, true),
@@ -128,6 +135,12 @@ export function createSystem() {
 
     moon.position.copy(earth.position).add(moonOffset(moonLongitude(t), tmp));
     moonOrbitG.position.copy(earth.position);
+    if (sunLine.visible) {
+      const p = sunLineGeo.attributes.position;
+      tmp.copy(earth.position).multiplyScalar(1 + 20 / EARTH_ORBIT);
+      p.setXYZ(1, tmp.x, tmp.y, tmp.z); p.needsUpdate = true;
+      sunLine.computeLineDistances();
+    }
     placeCone();
   }
 
@@ -135,6 +148,7 @@ export function createSystem() {
     group, parts, earth, moon, update,
     setPaths(on) { earthOrbit.visible = moonOrbit.visible = on; },
     setShadowCone(kind) { coneKind = kind; placeCone(); },
+    setSunLine(on) { sunLine.visible = on; },
     dispose() {
       group.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
       group.removeFromParent();
