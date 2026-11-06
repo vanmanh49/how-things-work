@@ -1,8 +1,12 @@
 import * as THREE from 'three';
 import { createEngine } from './engine.js';
+import { createEffects } from './effects.js';
 import { advanceTheta } from './kinematics.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ?theta=N pins the crank angle (used for screenshots).
+const pinned = new URLSearchParams(location.search).get('theta');
+const pinnedTheta = pinned === null || isNaN(+pinned) ? null : +pinned;
 
 function hasWebGL() {
   try {
@@ -56,7 +60,8 @@ function start() {
   stage.camera.position.set(42, 30, 62);
   stage.camera.lookAt(0, 14, 0);
   let engine = createEngine(1);
-  stage.scene.add(engine.group);
+  let effects = createEffects(engine);
+  stage.scene.add(engine.group, effects.group);
 
   const views = [stage];
   addEventListener('resize', () => views.forEach((v) => v.resize()));
@@ -67,8 +72,10 @@ function start() {
     const dt = (now - last) / 1000;
     last = now;
     if (stage.visible) {
-      if (!reducedMotion) theta = advanceTheta(theta, 600, dt);
+      if (pinnedTheta !== null) theta = pinnedTheta;
+      else if (!reducedMotion) theta = advanceTheta(theta, 600, dt);
       engine.update(theta);
+      effects.update(theta);
       stage.render();
     }
     requestAnimationFrame(frame);
