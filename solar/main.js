@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { hasWebGL, createView } from '../core/view.js';
 import { startLoop } from '../core/loop.js';
 import { sliceProgress, initScroll } from '../core/scroll.js';
-import { createSystem } from './scene.js';
+import { createSystem, createLabels, renderMoonInset } from './scene.js';
+import { initSandbox } from './sandbox.js';
 import {
   YEAR, SYNODIC, advanceTime, dayLength, noonAltitude, phaseName, illuminatedFraction, eclipseAt,
 } from './orbits.js';
@@ -26,12 +26,6 @@ function solarState({ step, stepProgress: sp }) {
     default: return { t: YEAR * sp, camera: 'eclipseSide', inset: 'none', labels: false };
   }
 }
-
-// [text, nudge side, local y offset on the anchor]
-const LABELS = {
-  sun: ['Sun', '', 12], earth: ['Earth', '', -3.2], axis: ["Earth's axis", '', 1.6], moon: ['Moon', 'right', 1],
-  earthOrbit: ["Earth's orbit", '', 0], moonOrbit: ["Moon's orbit", 'right', -1.5],
-};
 
 // Camera presets: [position, look-at] for time t and the current Earth position E.
 function cameraTarget(name, E) {
@@ -64,49 +58,22 @@ function start() {
   const system = createSystem();
   stage.scene.add(system.group);
 
-  // Part labels (only in "Meet the system").
+  // Part labels (only in "Meet the system") and the Moon-view / daylight inset.
   const labelLayer = document.getElementById('labels');
-  const labels = new CSS2DRenderer({ element: labelLayer });
-  const sizeLabels = () => labels.setSize(labelLayer.clientWidth, labelLayer.clientHeight);
-  sizeLabels();
-  const anchors = system.group.userData.labelAnchors;
-  for (const [id, [text, side, y]] of Object.entries(LABELS)) {
-    const el = document.createElement('div');
-    el.className = `label ${side}`;
-    el.innerHTML = `<span>${text}</span>`;
-    const obj = new CSS2DObject(el);
-    obj.position.y = y;
-    anchors[id].add(obj);
-  }
-
-  // Insets: daylight text box, or a second camera on Earth's surface looking at the Moon.
+  const labels = createLabels(system, labelLayer);
   const insetBox = document.getElementById('inset-box');
-  const insetLabel = document.getElementById('inset-label');
-  const moonCam = new THREE.PerspectiveCamera(14, 1, 0.05, 50);
-  const tmp = new THREE.Vector3();
-  function renderMoonInset() {
-    const c = canvas.getBoundingClientRect(), b = insetBox.getBoundingClientRect();
-    const r = stage.renderer;
-    const x = b.left - c.left, y = c.bottom - b.bottom, w = b.width, h = b.height;
-    tmp.copy(system.moon.position).sub(system.earth.position).normalize();
-    moonCam.position.copy(system.earth.position).addScaledVector(tmp, 2.1);
-    moonCam.lookAt(system.moon.position);
-    moonCam.aspect = w / h; moonCam.updateProjectionMatrix();
-    r.setScissorTest(true);
-    r.setScissor(x, y, w, h); r.setViewport(x, y, w, h);
-    r.setClearColor(0x020617); r.clear();
-    r.render(stage.scene, moonCam);
-    r.setScissorTest(false);
-    r.setViewport(0, 0, canvas.clientWidth, canvas.clientHeight);
-    r.setClearColor(0x0f172a);
-  }
+  const insetLabel = insetBox.querySelector('.inset-label');
+
+  const box = createView(document.getElementById('sandbox-canvas'));
+  const sandbox = initSandbox(box, document.getElementById('sandbox-ui'));
 
   let scroll = { slice: sliceProgress(0, STEPS), raw: -1 };
   initScroll(document.getElementById('walkthrough'), STEPS, (slice, raw) => { scroll = { slice, raw }; });
 
   const camPos = new THREE.Vector3(0, 105, 165), camLook = new THREE.Vector3();
   let t = 0;
-  startLoop([stage, { resize: sizeLabels }], (dt) => {
+  startLoop([stage, labels, box, sandbox.labels], (dt) => {
+    if (box.visible) sandbox.tick(dt);
     if (!stage.visible) return;
     const inHero = scroll.raw < 0;
     const st = inHero ? { t, camera: 'wide', inset: 'none', labels: false } : solarState(scroll.slice);
@@ -133,7 +100,7 @@ function start() {
     }
 
     stage.render();
-    if (st.inset === 'moonView') renderMoonInset();
+    if (st.inset === 'moonView') renderMoonInset(stage, system, insetBox);
     labelLayer.hidden = !st.labels;
     if (st.labels) labels.render(stage.scene, stage.camera);
   });

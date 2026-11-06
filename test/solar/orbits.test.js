@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   YEAR, SYNODIC, TILT,
   sunLongitude, sunDeclination, dayLength, noonAltitude, subsolarLongitude,
-  illuminatedFraction, phaseName, seasonNorth, seasonSouth, eclipseAt, nextEvent, advanceTime,
+  illuminatedFraction, phaseName, seasonNorth, seasonSouth, eclipseAt, nextEvent, advanceTime, speedFromSlider,
 } from '../../solar/orbits.js';
 
 const close = (a, b, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -72,4 +72,8 @@ test('nextEvent: strictly after t, analytic kinds exact, eclipse skips the curre
 
 test('advanceTime clamps dt to 0.1 s', () => {
   close(advanceTime(0, 30, 5), 3); close(advanceTime(10, 1 / 24, 0.05), 10 + 0.05 / 24); close(advanceTime(5, -1, 0.1), 4.9);
+});
+
+test('speed slider is log-scaled 1 h/s … 30 d/s', () => {
+  close(speedFromSlider(0), 1 / 24); close(speedFromSlider(100), 30); close(speedFromSlider(50), Math.sqrt(30 / 24));
 });

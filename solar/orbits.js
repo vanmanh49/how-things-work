@@ -86,3 +86,6 @@ export function nextEvent(t, kind) {
 
 // Time step for animation; dt clamped so a hidden tab can't make the scene jump.
 export const advanceTime = (t, daysPerSecond, dtSeconds) => t + daysPerSecond * Math.min(dtSeconds, 0.1);
+
+// Sandbox speed slider 0..100 → days per second, log scale from 1 hour/s to 30 days/s.
+export const speedFromSlider = (v) => (1 / 24) * 720 ** (v / 100);

@@ -1,6 +1,7 @@
 // Sun–Earth–Moon scene, not to scale. Ecliptic plane = xz, dir(λ) = (cos λ, 0, −sin λ).
 // Everything is placed from orbits.js as a function of time t (days), so scrubbing time backwards works.
 import * as THREE from 'three';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import {
   TILT, MOON_INCL, NODE, sunLongitude, moonLongitude, subsolarLongitude,
 } from './orbits.js';
@@ -154,4 +155,46 @@ export function createSystem() {
       group.removeFromParent();
     },
   };
+}
+
+// Part labels: [text, nudge side, local y offset on the anchor]. Returns a CSS2D renderer bound to `layer`.
+const LABELS = {
+  sun: ['Sun', '', 12], earth: ['Earth', '', -3.2], axis: ["Earth's axis", '', 1.6], moon: ['Moon', 'right', 1],
+  earthOrbit: ["Earth's orbit", '', 0], moonOrbit: ["Moon's orbit", 'right', -1.5],
+};
+export function createLabels(system, layer) {
+  const renderer = new CSS2DRenderer({ element: layer });
+  const anchors = system.group.userData.labelAnchors;
+  for (const [id, [text, side, y]] of Object.entries(LABELS)) {
+    const el = document.createElement('div');
+    el.className = `label ${side}`;
+    el.innerHTML = `<span>${text}</span>`;
+    const obj = new CSS2DObject(el);
+    obj.position.y = y;
+    anchors[id].add(obj);
+  }
+  const resize = () => renderer.setSize(layer.clientWidth, layer.clientHeight);
+  resize();
+  return { resize, render: (scene, camera) => renderer.render(scene, camera) };
+}
+
+// "View from Earth" inset: a second camera on Earth's surface looking at the Moon, drawn with
+// scissor into the rectangle of `box` (an element positioned over the canvas).
+const moonCam = new THREE.PerspectiveCamera(14, 1, 0.05, 50);
+const towardMoon = new THREE.Vector3();
+export function renderMoonInset(view, system, box) {
+  const canvas = view.renderer.domElement, r = view.renderer;
+  const c = canvas.getBoundingClientRect(), b = box.getBoundingClientRect();
+  const x = b.left - c.left, y = c.bottom - b.bottom, w = b.width, h = b.height;
+  towardMoon.copy(system.moon.position).sub(system.earth.position).normalize();
+  moonCam.position.copy(system.earth.position).addScaledVector(towardMoon, EARTH_R + 0.1);
+  moonCam.lookAt(system.moon.position);
+  moonCam.aspect = w / h; moonCam.updateProjectionMatrix();
+  r.setScissorTest(true);
+  r.setScissor(x, y, w, h); r.setViewport(x, y, w, h);
+  r.setClearColor(0x020617); r.clear();
+  r.render(view.scene, moonCam);
+  r.setScissorTest(false);
+  r.setViewport(0, 0, canvas.clientWidth, canvas.clientHeight);
+  r.setClearColor(0x0f172a);
 }

@@ -47,7 +47,7 @@
     <div id="stage">
       <canvas id="stage-canvas" aria-label="3D model of the Sun, Earth and Moon"></canvas>
       <div id="labels" aria-hidden="true"></div>
-      <div id="inset-box" hidden><div id="inset-label"></div></div>
+      <div id="inset-box" class="inset" hidden><div class="inset-label"></div></div>
     </div>
     <main id="content">
       <section id="hero">
@@ -90,7 +90,36 @@
 
   <section id="sandbox" aria-label="Sun, Earth and Moon sandbox">
     <canvas id="sandbox-canvas" aria-label="Interactive 3D Sun, Earth and Moon"></canvas>
-    <div id="sandbox-ui"></div>
+    <div id="sandbox-labels" class="labels-layer" aria-hidden="true"></div>
+    <div id="sandbox-inset" class="inset" hidden><div class="inset-label"></div></div>
+    <div id="sandbox-ui">
+      <h2>Sandbox</h2>
+      <label for="speed">Speed: <output id="speed-out" for="speed"></output></label>
+      <input type="range" id="speed" min="0" max="100" step="1" value="60">
+      <div class="row">
+        <button id="back-day" type="button" aria-label="Back 1 day">−1 d</button>
+        <button id="back-hour" type="button" aria-label="Back 1 hour">−1 h</button>
+        <button id="play" type="button">Pause</button>
+        <button id="fwd-hour" type="button" aria-label="Forward 1 hour">+1 h</button>
+        <button id="fwd-day" type="button" aria-label="Forward 1 day">+1 d</button>
+      </div>
+      <fieldset class="jumps">
+        <legend>Jump to the next…</legend>
+        <button type="button" data-kind="juneSolstice">June solstice</button>
+        <button type="button" data-kind="decSolstice">December solstice</button>
+        <button type="button" data-kind="marchEquinox">March equinox</button>
+        <button type="button" data-kind="newMoon">New Moon</button>
+        <button type="button" data-kind="fullMoon">Full Moon</button>
+        <button type="button" data-kind="eclipse">Eclipse</button>
+      </fieldset>
+      <label for="lat">Pin latitude: <output id="lat-out" for="lat">40°N</output></label>
+      <input type="range" id="lat" min="-90" max="90" step="1" value="40">
+      <label class="check"><input type="checkbox" id="paths" checked> Orbit paths</label>
+      <label class="check"><input type="checkbox" id="labels-toggle"> Labels</label>
+      <label class="check"><input type="checkbox" id="moon-inset" checked> View from Earth</label>
+      <pre id="readout"></pre>
+      <p class="note">Drag to orbit · click a body to learn about it</p>
+    </div>
     <aside id="part-card" hidden aria-live="polite">
       <button type="button" aria-label="Close">×</button>
       <h3></h3>

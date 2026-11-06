@@ -1,16 +1,30 @@
 /* Solar-only styles; shared layout lives in ../core/page.css */
-#inset-box {
+.inset {
   position: absolute; right: 16px; bottom: 16px; width: 28%; min-width: 180px; aspect-ratio: 1;
   border: 1px solid var(--muted); border-radius: 8px; pointer-events: none;
 }
-#inset-box.text { aspect-ratio: auto; background: rgba(30, 41, 59, .92); padding: 12px; }
-#inset-label {
+.inset.text { aspect-ratio: auto; background: rgba(30, 41, 59, .92); padding: 12px; }
+.inset-label {
   position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 14px;
   text-shadow: 0 1px 2px #000;
 }
-#inset-box.text #inset-label { position: static; text-shadow: none; }
+.inset.text .inset-label { position: static; text-shadow: none; }
 .badge {
   display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .85rem;
   border: 1px solid var(--accent); color: var(--accent); margin-bottom: .8em;
 }
 .myth { border-left: 3px solid var(--accent); padding-left: 12px; }
+
+.labels-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#sandbox-ui { max-height: calc(100% - 32px); overflow-y: auto; }
+.jumps { flex-wrap: wrap; gap: 6px; }
+.jumps button { font-size: .85rem; padding: 2px 8px; }
+#sandbox-ui .row button { padding: 4px 6px; }
+#sandbox .inset { right: 16px; bottom: 16px; width: 22%; }
+@media (max-width: 768px) {
+  #sandbox .inset { top: 16px; bottom: auto; width: 35%; }
+}
+#sandbox-ui { width: 310px; }
+#sandbox-ui .row button { flex: 1; white-space: nowrap; }
+#sandbox #readout { white-space: pre-wrap; font-size: 13px; }
+@media (max-width: 768px) { #sandbox-ui { width: auto; } }
