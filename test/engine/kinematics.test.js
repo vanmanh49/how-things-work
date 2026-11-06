@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   STROKE, R, L, MAX_LIFT, INTAKE, EXHAUST,
   wrapTheta, pistonY, valveLift, strokeAt, cylinderPhase, advanceTheta, camRadius,
-} from '../js/kinematics.js';
+} from '../../js/kinematics.js';
 
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≠ ${b}`);
 

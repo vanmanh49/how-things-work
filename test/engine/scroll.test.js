@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scrollState } from '../js/scroll.js';
+import { scrollState } from '../../js/scroll.js';
 
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} ≠ ${b}`);
 const pick = (s) => ({ step: s.step, theta: s.theta, cylinders: s.cylinders });
