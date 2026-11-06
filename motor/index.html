@@ -75,6 +75,7 @@
         </svg>
         <figcaption>Left-hand rule</figcaption>
       </figure>
+      <div id="gauge" hidden><span>Turning effect</span><div class="bar"><i></i></div></div>
       <div id="chart-box" hidden><canvas id="chart" aria-label="Chart of speed and current during spin-up"></canvas></div>
     </div>
     <main id="content">
@@ -84,12 +85,39 @@
         <p class="hint" aria-hidden="true">↓</p>
       </section>
       <section id="walkthrough">
-        <article class="panel" data-step="parts"><h2>Meet the motor</h2></article>
-        <article class="panel" data-step="force"><h2><span class="num">1.</span> A push on a wire</h2></article>
-        <article class="panel" data-step="commutator"><h2><span class="num">2.</span> The commutator</h2></article>
-        <article class="panel" data-step="backemf"><h2><span class="num">3.</span> Speed and back-EMF</h2></article>
-        <article class="panel" data-step="generator"><h2><span class="num">4.</span> Run it backwards: a generator</h2></article>
-        <article class="panel" data-step="ev"><h2><span class="num">5.</span> Motors in electric cars</h2></article>
+        <article class="panel" data-step="parts">
+          <h2>Meet the motor</h2>
+          <p>Magnets make a field; a coil of wire carries current; the commutator and brushes feed it.</p>
+          <p>The battery pushes current in through one brush, around the coil, and out through the other. The coil and the commutator turn on the shaft; the magnets and brushes stay still.</p>
+        </article>
+        <article class="panel" data-step="force">
+          <h2><span class="num">1.</span> A push on a wire</h2>
+          <p>A wire carrying current across a magnetic field feels a force. Use your left hand: <b>F</b>irst finger along the <b>F</b>ield, se<b>C</b>ond finger along the <b>C</b>urrent, and your thu<b>M</b>b points to the <b>M</b>otion.</p>
+          <p>F = BIL. 20 turns × 0.5 T × 3 A × 0.05 m = <b>1.5 N</b> on each side, in opposite directions, so the coil turns.</p>
+          <p class="note">Arrows show conventional current (+ to −). The electrons in the wire actually flow the other way.</p>
+        </article>
+        <article class="panel" data-step="commutator">
+          <h2><span class="num">2.</span> The commutator</h2>
+          <p>Without a commutator the force flips past vertical and the coil just rocks. The split ring swaps the connections every half turn, so the current reverses and the coil keeps turning.</p>
+          <p class="note">Keep scrolling: first with two plain slip rings, then with the split-ring commutator. The gauge shows the turning effect of one loop.</p>
+        </article>
+        <article class="panel" data-step="backemf">
+          <h2><span class="num">3.</span> Speed and back-EMF</h2>
+          <p>At the start the current is the full 3 A (6 V ÷ 2 Ω). As the coil speeds up it acts as a generator, making a back-EMF that cancels more of the battery voltage, until the speed settles near <b>2700 rpm</b>.</p>
+          <p>Put a load on the shaft and it slows down, the back-EMF falls, and it draws more current to push harder.</p>
+          <p class="note">One loop is drawn so it's clear; the numbers come from a motor with many coils, so its turning force is smooth. Coil inductance is ignored. Shown 20× slower.</p>
+        </article>
+        <article class="panel" data-step="generator">
+          <h2><span class="num">4.</span> Run it backwards: a generator</h2>
+          <p>Spin it and it makes electricity: EMF = kω. At 1000 rpm that's <b>2.1 V</b>. This is regenerative braking.</p>
+          <p>The battery is swapped for a bulb. The faster you turn the shaft, the brighter it glows — and the harder the coil pushes back against you.</p>
+        </article>
+        <article class="panel" data-step="ev">
+          <h2><span class="num">5.</span> Motors in electric cars</h2>
+          <p>Electric-car motors have no brushes: electronics switch the coils. They are about <b>90 %</b> efficient (a petrol engine is about <b>30 %</b>) and give full torque from 0 rpm.</p>
+          <p>Many cars use AC induction motors, where the spinning part has no wires connected to it at all. Compare with <a href="../engine/">how a petrol engine works</a>.</p>
+          <p class="note">Scroll on to the sandbox to drive the motor yourself.</p>
+        </article>
       </section>
     </main>
   </div>

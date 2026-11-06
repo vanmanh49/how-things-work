@@ -15,3 +15,11 @@
   #lhr { width: 150px; top: 8px; right: 8px; }
   #chart-box { width: 50%; min-width: 0; right: 8px; bottom: 8px; }
 }
+#gauge {
+  position: absolute; right: 16px; bottom: 16px; width: 240px; padding: 10px 12px;
+  background: rgba(30, 41, 59, .92); border: 1px solid var(--muted); border-radius: 8px; pointer-events: none; font-size: 13px;
+}
+#gauge .bar { position: relative; height: 12px; margin-top: 6px; background: #334155; border-radius: 6px; }
+#gauge .bar::after { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: #e2e8f0; }
+#gauge i { position: absolute; top: 0; bottom: 0; border-radius: 6px; }
+@media (max-width: 768px) { #gauge { width: 160px; right: 8px; bottom: 8px; } }
