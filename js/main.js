@@ -49,6 +49,7 @@ function createView(canvas) {
       if (!w || !h) return;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
+      camera.fov = camera.aspect < 1 ? Math.min(75, 40 / camera.aspect) : 40;   // keep width in frame on portrait screens
       camera.updateProjectionMatrix();
     },
     render() { renderer.render(scene, camera); },
