@@ -3,17 +3,20 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createMotor } from './scene.js';
 import { createChart } from './chart.js';
-import { step, readouts, commutatorSign, SLOW } from './physics.js';
+import { step, readouts, commutatorSign, SLOW, MAX_LOAD } from './physics.js';
 import { PARTS } from './parts.js';
 import { bindPicking, createCard } from '../core/cards.js';
 
 const WINDOW = 5;   // seconds of shown time on the chart
 // Raycasting ignores visibility, so skip meshes inside a hidden group (battery/bulb, unused commutator).
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+// Round first, then add 0: a tiny negative would otherwise print as "-0".
+const fix = (x, d) => (Math.round(x * 10 ** d) / 10 ** d + 0).toFixed(d);
 
 export function initSandbox(view, ui) {
   const $ = (id) => document.getElementById(id);
   const volts = $('volts'), load = $('load'), magnet = $('magnet'), crank = $('crank'), play = $('play'), readout = $('readout');
+  load.max = MAX_LOAD * 1000;   // N·m → mN·m
   const toggles = { field: $('show-field'), current: $('show-current'), force: $('show-force') };
 
   const motor = createMotor();
@@ -26,10 +29,10 @@ export function initSandbox(view, ui) {
   controls.update();
 
   const chart = createChart($('sandbox-chart'), [
-    { key: 'rpm', label: 'Speed (0–6000 rpm)', color: '#38bdf8', max: 6000 },
+    { key: 'rpm', label: 'Speed (0–10000 rpm)', color: '#38bdf8', max: 10000 },
     { key: 'current', label: 'Current (0–6 A)', color: '#f97316', max: 6 },
   ]);
-  let points = [];
+  const points = [];
 
   let state = { t: 0, omega: 0, angle: 30 };
   let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -75,17 +78,17 @@ export function initSandbox(view, ui) {
     if (playing) {
       points.push({ t: state.t * SLOW, rpm: Math.abs(r.rpm), current: Math.abs(r.current) });
       const cut = state.t * SLOW - WINDOW;
-      if (points[0].t < cut) points = points.filter((p) => p.t >= cut);
+      while (points[0].t < cut) points.shift();
+      chart.draw(points, WINDOW);
     }
-    chart.draw(points, WINDOW);
 
     const lines = [
-      `Speed: ${r.rpm.toFixed(0)} rpm`,
-      `Current: ${r.current.toFixed(2)} A · Torque: ${(r.torque * 1000).toFixed(1)} mN·m`,
-      `Back-EMF: ${r.backEmf.toFixed(2)} V`,
-      `Power in: ${r.powerIn.toFixed(2)} W · out: ${r.powerOut.toFixed(2)} W · Efficiency: ${(r.efficiency * 100).toFixed(0)} %`,
+      `Speed: ${fix(r.rpm, 0)} rpm`,
+      `Current: ${fix(r.current, 2)} A · Torque: ${fix(r.torque * 1000, 1)} mN·m`,
+      `Back-EMF: ${fix(r.backEmf, 2)} V`,
+      `Power in: ${fix(r.powerIn, 2)} W · out: ${fix(r.powerOut, 2)} W · Efficiency: ${fix(r.efficiency * 100, 0)} %`,
     ];
-    if (mode === 'generator') lines.push(`Bulb: ${r.bulbPower.toFixed(2)} W`);
+    if (mode === 'generator') lines.push(`Bulb: ${fix(r.bulbPower, 2)} W`);
     const text = lines.join('\n');
     if (text !== lastText) { readout.textContent = text; lastText = text; }
 

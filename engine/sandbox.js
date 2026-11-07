@@ -63,7 +63,7 @@ export function initSandbox(view, ui) {
     effects.update(theta);
     const rows = Array.from({ length: engine.cylinders }, (_, k) =>
       `Cyl ${k + 1}: ${strokeAt(wrapTheta(theta - cylinderPhase(k + 1)))}`);
-    const text = `θ = ${Math.round(theta)}°\n${rows.join('\n')}`;
+    const text = `θ = ${Math.round(theta) % 720}°\n${rows.join('\n')}`;
     if (text !== lastText) { readout.textContent = text; lastText = text; }
   }
 

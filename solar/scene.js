@@ -1,7 +1,7 @@
 // Sun–Earth–Moon scene, not to scale. Ecliptic plane = xz, dir(λ) = (cos λ, 0, −sin λ).
 // Everything is placed from orbits.js as a function of time t (days), so scrubbing time backwards works.
 import * as THREE from 'three';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { createLabelLayer } from '../core/labels.js';
 import {
   TILT, MOON_INCL, NODE, sunLongitude, moonLongitude, subsolarLongitude,
 } from './orbits.js';
@@ -165,19 +165,9 @@ const LABELS = {
   earthOrbit: ["Earth's orbit", '', 0], moonOrbit: ["Moon's orbit", 'right', -1.5],
 };
 export function createLabels(system, layer) {
-  const renderer = new CSS2DRenderer({ element: layer });
-  const anchors = system.group.userData.labelAnchors;
-  for (const [id, [text, side, y]] of Object.entries(LABELS)) {
-    const el = document.createElement('div');
-    el.className = `label ${side}`;
-    el.innerHTML = `<span>${text}</span>`;
-    const obj = new CSS2DObject(el);
-    obj.position.y = y;
-    anchors[id].add(obj);
-  }
-  const resize = () => renderer.setSize(layer.clientWidth, layer.clientHeight);
-  resize();
-  return { resize, render: (scene, camera) => renderer.render(scene, camera) };
+  const labels = createLabelLayer(layer);
+  labels.add(system.group.userData.labelAnchors, LABELS);
+  return labels;
 }
 
 // "View from Earth" inset: a second camera on Earth's surface looking at the Moon, drawn with

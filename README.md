@@ -25,6 +25,13 @@ npm test        # unit tests for the engine maths, orbit maths, motor physics an
 runs stale JavaScript or CSS while you work. Opening `index.html` straight from disk won't
 work, because ES modules need to be served over HTTP.
 
+`test/browser/` holds the browser checks for the 3D pages: walkthrough steps, info cards, the sandboxes,
+the solar Moon-view inset, and the whole site including the GitHub Pages sub-path. Each file is a
+Playwright function `async (page) => {...}`. Run it with Playwright's `run_code` (for example the Playwright
+MCP tool, with `filename` set to the script) against `npm run serve`. The dev server also serves the site under
+`/how-things-work/`, the GitHub Pages sub-path, which `site-check.js` uses to test relative links. Each check returns its measured values and any console or HTTP
+errors.
+
 For screenshots, `?theta=N` pins the engine's crank angle (degrees) and `?t=N` pins solar
 time (days, where day 0 is the March equinox). `?angle=N` pins the motor's rotor angle (degrees).
 
@@ -37,7 +44,7 @@ engine/         4-stroke engine topic
 solar/          Sun–Earth–Moon topic
 motor/          electric motor and generator topic
 assets/         card images
-test/           Node tests (node --test)
+test/           Node tests (node --test); test/browser/ holds the Playwright browser checks
 docs/           design specs and implementation plans
 ```
 

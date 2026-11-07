@@ -9,11 +9,6 @@ on:
 permissions:
   contents: read
 
-# One deployment at a time; a newer push cancels a pending one.
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -29,6 +24,11 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: test
     runs-on: ubuntu-latest
+    # One deployment at a time. Only deploys join this group, so a PR run can never cancel one,
+    # and a deploy already in progress is allowed to finish.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

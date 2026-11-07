@@ -28,19 +28,22 @@ function solarState({ step, stepProgress: sp }) {
 }
 
 // Camera presets: [position, look-at] for time t and the current Earth position E.
+// Returns shared vectors (overwritten on every call), so it allocates nothing per frame.
+const camP = new THREE.Vector3(), camL = new THREE.Vector3(), sunward = new THREE.Vector3(), side = new THREE.Vector3();
+const UP = new THREE.Vector3(0, 1, 0);
 function cameraTarget(name, E) {
-  const v = (x, y, z) => new THREE.Vector3(x, y, z);
   switch (name) {
-    case 'earthClose': return [E.clone().add(v(6, 3, 8)), E.clone()];
-    case 'seasons': return [E.clone().add(v(28, 6, 0)), E.clone()];   // follows Earth, side-on to the June–December line, so the lean shows
-    case 'moonTop': return [E.clone().add(v(0, 24, 4)), E.clone()];
+    case 'earthClose': return [camP.set(6, 3, 8).add(E), camL.copy(E)];
+    case 'seasons': return [camP.set(28, 6, 0).add(E), camL.copy(E)];   // follows Earth, side-on to the June–December line, so the lean shows
+    case 'moonTop': return [camP.set(0, 24, 4).add(E), camL.copy(E)];
     case 'eclipseSide': {
       // Side-on to the Sun–Earth line at Earth's level, looking a little sunward of Earth.
-      const sunward = E.clone().negate().normalize();
-      const side = new THREE.Vector3().crossVectors(sunward, v(0, 1, 0)).normalize();
-      return [E.clone().addScaledVector(side, 30).addScaledVector(sunward, 4).add(v(0, 2, 0)), E.clone().addScaledVector(sunward, 4)];
+      sunward.copy(E).negate().normalize();
+      side.crossVectors(sunward, UP).normalize();
+      camP.copy(E).addScaledVector(side, 30).addScaledVector(sunward, 4).y += 2;
+      return [camP, camL.copy(E).addScaledVector(sunward, 4)];
     }
-    default: return [v(0, 105, 165), v(0, 0, 0)];
+    default: return [camP.set(0, 105, 165), camL.set(0, 0, 0)];
   }
 }
 
