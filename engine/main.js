@@ -3,10 +3,10 @@ import { createEngine } from './engine.js';
 import { createEffects } from './effects.js';
 import { scrollState, initScroll } from './scroll.js';
 import { initSandbox } from './sandbox.js';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { advanceTheta } from './kinematics.js';
 import { hasWebGL, createView } from '../core/view.js';
 import { startLoop } from '../core/loop.js';
+import { createLabelLayer } from '../core/labels.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ?theta=N pins the crank angle (used for screenshots).
@@ -46,9 +46,7 @@ function start() {
   placeCamera(0);
 
   const labelLayer = document.getElementById('labels');
-  const labels = new CSS2DRenderer({ element: labelLayer });
-  const sizeLabels = () => labels.setSize(labelLayer.clientWidth, labelLayer.clientHeight);
-  sizeLabels();
+  const labels = createLabelLayer(labelLayer);
 
   // Builds engine + effects (+ part labels on cylinder 1) for n cylinders; disposes the old ones.
   let engine, effects;
@@ -58,16 +56,7 @@ function start() {
     engine = createEngine(n);
     effects = createEffects(engine);
     stage.scene.add(engine.group, effects.group);
-    const anchors = engine.group.userData.labelAnchors;
-    for (const [id, [text, side, y]] of Object.entries(LABELS)) {
-      if (!anchors[id]) continue;
-      const el = document.createElement('div');
-      el.className = `label ${side}`;
-      el.innerHTML = `<span>${text}</span>`;
-      const obj = new CSS2DObject(el);
-      obj.position.y = y;
-      anchors[id].add(obj);
-    }
+    labels.add(engine.group.userData.labelAnchors, LABELS);
   }
   build(1);
 
@@ -79,7 +68,7 @@ function start() {
   initScroll(document.getElementById('walkthrough'), (state, raw) => { scroll = { state, raw }; });
 
   let theta = 0;
-  startLoop([stage, box, { resize: sizeLabels }], (dt) => {
+  startLoop([stage, box, labels], (dt) => {
     if (stage.visible) {
       const { state, raw } = scroll;
       const inHero = raw < 0;

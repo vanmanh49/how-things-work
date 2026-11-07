@@ -3,7 +3,7 @@ export function startLoop(resizables, tick) {
   addEventListener('resize', () => resizables.forEach((r) => r.resize()));
   let last = performance.now();
   function frame(now) {
-    const dt = (now - last) / 1000;
+    const dt = Math.max(0, (now - last) / 1000);   // the first frame's timestamp can predate `last`
     last = now;
     tick(dt);
     requestAnimationFrame(frame);

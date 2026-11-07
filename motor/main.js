@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { hasWebGL, createView } from '../core/view.js';
 import { startLoop } from '../core/loop.js';
+import { createLabelLayer } from '../core/labels.js';
 import { sliceProgress, initScroll } from '../core/scroll.js';
 import { createMotor } from './scene.js';
 import { createChart } from './chart.js';
@@ -25,7 +25,7 @@ function motorState({ step: name, stepProgress: sp }) {
     case 'force': return { ...base, angle: 60 * sp, arrows: { field: true, current: true, force: true }, lhr: true, camera: 'sideClose' };
     case 'commutator': return sp < 0.5
       ? { ...base, commutator: 'slip', angle: rockingAngle(2 * sp), arrows: { field: false, current: true, force: true } }
-      : { ...base, angle: 360 * (2 * sp - 1), arrows: { field: false, current: true, force: true } };
+      : { ...base, angle: 90 + 360 * (2 * sp - 1), arrows: { field: false, current: true, force: true } };
     case 'backemf': {
       const i = Math.round(sp * (SPINUP.length - 1));
       return { ...base, angle: SPINUP[i].angle, chart: i, arrows: { field: false, current: true, force: true } };
@@ -44,18 +44,6 @@ const LABELS = {
   magnetN: ['N pole (magnet)', 'left'], magnetS: ['S pole (magnet)', 'right'], coil: ['Coil (20 turns)', ''],
   commutator: ['Commutator (split ring)', 'right'], brushes: ['Brushes', 'left'], battery: ['Battery', ''], shaft: ['Shaft', 'right'],
 };
-function createLabels(motor, layer) {
-  const renderer = new CSS2DRenderer({ element: layer });
-  for (const [id, [text, side]] of Object.entries(LABELS)) {
-    const el = document.createElement('div');
-    el.className = `label ${side}`;
-    el.innerHTML = `<span>${text}</span>`;
-    motor.labelAnchors[id].add(new CSS2DObject(el));
-  }
-  const resize = () => renderer.setSize(layer.clientWidth, layer.clientHeight);
-  resize();
-  return { resize, render: (scene, camera) => renderer.render(scene, camera) };
-}
 
 function start() {
   if (!hasWebGL()) {
@@ -69,7 +57,8 @@ function start() {
   const motor = createMotor();
   stage.scene.add(motor.group);
   const labelLayer = $('labels');
-  const labels = createLabels(motor, labelLayer);
+  const labels = createLabelLayer(labelLayer);
+  labels.add(motor.labelAnchors, LABELS);
   const chartBox = $('chart-box'), lhr = $('lhr'), gauge = $('gauge'), gaugeFill = gauge.querySelector('i');
   const chart = createChart($('chart'), [
     { key: 'rpm', label: 'Speed (0–3000 rpm)', color: '#38bdf8', max: 3000 },
