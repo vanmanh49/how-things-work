@@ -54,7 +54,8 @@ export function readouts({ omega }, inputs) {
     return { rpm, current: I, torque: k * I, backEmf, powerIn, powerOut: bulbPower, efficiency: powerIn > 0 ? bulbPower / powerIn : 0, bulbPower };
   }
   const I = current(inputs.V, omega, k), powerIn = inputs.V * I, powerOut = inputs.load * Math.abs(omega);
-  return { rpm, current: I, torque: k * I, backEmf, powerIn, powerOut, efficiency: powerIn > 0 ? powerOut / powerIn : 0, bulbPower: 0 };
+  // While a brake slows the rotor its stored energy also feeds the brake, so out/in can briefly pass 1; cap it.
+  return { rpm, current: I, torque: k * I, backEmf, powerIn, powerOut, efficiency: powerIn > 0 ? Math.min(1, powerOut / powerIn) : 0, bulbPower: 0 };
 }
 
 const cosd = (deg) => Math.cos((deg * Math.PI) / 180);

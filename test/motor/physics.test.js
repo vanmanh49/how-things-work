@@ -82,3 +82,11 @@ test('spinUp: evenly spaced, starts at rest with 3 A, ends near steady state', (
   close(s[1].t - s[0].t, s[2].t - s[1].t, 1e-9);
   assert.ok(Math.abs(s.at(-1).omega / steadyState(MOTOR(6)).omega - 1) < 0.02);
 });
+test('efficiency stays within 0..1 while a brake slows the motor (rotor energy is not counted as power in)', () => {
+  let s = run({ t: 0, omega: 0, angle: 0 }, MOTOR(6), 1);
+  for (let k = 0; k < 400; k++) {
+    s = step(s, MOTOR(6, 1, 0.02), 0.05);
+    const e = readouts(s, MOTOR(6, 1, 0.02)).efficiency;
+    assert.ok(e >= 0 && e <= 1, `${k}: ${e}`);
+  }
+});

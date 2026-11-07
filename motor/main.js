@@ -6,7 +6,7 @@ import { sliceProgress, initScroll } from '../core/scroll.js';
 import { createMotor } from './scene.js';
 import { createChart } from './chart.js';
 import { initSandbox } from './sandbox.js';
-import { commutatorSign, loopTorque, rockingAngle, spinUp, step, readouts, toRpm, SLOW } from './physics.js';
+import { commutatorSign, loopTorque, rockingAngle, spinUp, step, readouts, toRpm, fromRpm, SLOW } from './physics.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ?angle=N pins the rotor angle to N degrees (used for screenshots).
@@ -97,7 +97,7 @@ function start() {
     let currentSign = commutatorSign(angle), currentMag = 0.5, forceMag = 0.5, bulbPower = 0;
     if (st.mode === 'generator') {
       const inputs = { mode: 'generator', crankRpm: st.crankRpm, magnet: 1 };
-      if (!reducedMotion) gen = step(gen, inputs, dt);
+      gen = reducedMotion ? { ...gen, omega: fromRpm(st.crankRpm) } : step(gen, inputs, dt);   // reduced motion holds the angle, not the speed
       angle = gen.angle;
       const r = readouts(gen, inputs);
       bulbPower = r.bulbPower;
@@ -107,10 +107,8 @@ function start() {
       currentMag = forceMag = SPINUP[st.chart].current / 6;
     } else if (st.commutator === 'slip') {
       currentSign = 1;                         // slip rings never swap the connections
-      forceMag = Math.abs(loopTorque(angle, 'slip'));
-    } else if (scroll.slice.step === 'commutator' && !inHero) {
-      forceMag = loopTorque(angle, 'split');
     }
+    // The force on each side is BIL at every angle (uniform field); only the lever arm, shown by the gauge, varies.
     if (pinnedAngle !== null) angle = pinnedAngle;
 
     if (motor.commutator !== st.commutator) motor.setCommutator(st.commutator);
