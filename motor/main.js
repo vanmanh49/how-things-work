@@ -36,7 +36,7 @@ function motorState({ step: name, stepProgress: sp }) {
 
 const CAMERAS = {
   wide: [new THREE.Vector3(6, 8, 20), new THREE.Vector3(0, 0, -1)],
-  sideClose: [new THREE.Vector3(11, 5, 9), new THREE.Vector3(1.5, 0, 0)],
+  sideClose: [new THREE.Vector3(4, 9, 12), new THREE.Vector3(1.5, 0, 0)],
 };
 
 const LABELS = {
