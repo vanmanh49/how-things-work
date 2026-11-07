@@ -5,6 +5,7 @@ import { startLoop } from '../core/loop.js';
 import { sliceProgress, initScroll } from '../core/scroll.js';
 import { createMotor } from './scene.js';
 import { createChart } from './chart.js';
+import { initSandbox } from './sandbox.js';
 import { commutatorSign, loopTorque, rockingAngle, spinUp, step, readouts, toRpm, SLOW } from './physics.js';
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -82,7 +83,11 @@ function start() {
   const camPos = CAMERAS.wide[0].clone(), camLook = CAMERAS.wide[1].clone();
   let heroAngle = 30, gen = { t: 0, omega: 0, angle: 30 }, lastChart = -1;
 
-  startLoop([stage, labels], (dt) => {
+  const box = createView($('sandbox-canvas'));
+  const sandbox = initSandbox(box, $('sandbox-ui'));
+
+  startLoop([stage, labels, box], (dt) => {
+    if (box.visible) sandbox.tick(dt);
     if (!stage.visible) return;
     const inHero = scroll.raw < 0;
     const st = inHero ? { ...motorState({ step: 'parts', stepProgress: 0 }), labels: false } : motorState(scroll.slice);

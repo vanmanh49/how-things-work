@@ -126,6 +126,30 @@
     <canvas id="sandbox-canvas" aria-label="Interactive 3D electric motor"></canvas>
     <div id="sandbox-ui">
       <h2>Sandbox</h2>
+      <fieldset>
+        <legend>Mode</legend>
+        <label><input type="radio" name="mode" value="motor" checked> Motor</label>
+        <label><input type="radio" name="mode" value="generator"> Generator</label>
+      </fieldset>
+      <div id="motor-controls">
+        <label for="volts">Battery: <output id="volts-out" for="volts">6</output> V</label>
+        <input type="range" id="volts" min="-12" max="12" step="0.5" value="6">
+        <label for="load">Brake load: <output id="load-out" for="load">0</output> mN·m</label>
+        <input type="range" id="load" min="0" max="50" step="1" value="0">
+      </div>
+      <div id="gen-controls" hidden>
+        <label for="crank">Crank speed: <output id="crank-out" for="crank">1000</output> rpm</label>
+        <input type="range" id="crank" min="0" max="3000" step="50" value="1000">
+      </div>
+      <label for="magnet">Magnet strength: <output id="magnet-out" for="magnet">100</output> %</label>
+      <input type="range" id="magnet" min="50" max="150" step="5" value="100">
+      <div class="row"><button id="play" type="button">Pause</button></div>
+      <label class="check"><input type="checkbox" id="show-field" checked> Field arrows</label>
+      <label class="check"><input type="checkbox" id="show-current" checked> Current arrows</label>
+      <label class="check"><input type="checkbox" id="show-force" checked> Force arrows</label>
+      <pre id="readout"></pre>
+      <canvas id="sandbox-chart" aria-label="Rolling chart of speed and current"></canvas>
+      <p class="note">Shown 20× slower · drag to orbit · click a part to learn about it</p>
     </div>
     <aside id="part-card" hidden aria-live="polite">
       <button type="button" aria-label="Close">×</button>
