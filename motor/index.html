@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electric Motor · How Things Work</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../core/page.css">
+  <link rel="stylesheet" href="motor.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <nav class="topbar"><a href="../">How Things Work</a>
+    <select aria-label="Choose a topic" autocomplete="off" onchange="if (this.value) location.href = this.value">
+      <option value="../engine/">4-Stroke Engine</option>
+      <option value="../solar/">Sun, Earth &amp; Moon</option>
+      <option value="../motor/" selected>Electric Motor</option>
+    </select>
+  </nav>
+
+  <div id="no-webgl" hidden>
+    <p>Your browser can't show 3D graphics. Here's a diagram instead.</p>
+    <svg viewBox="0 0 400 200" role="img" aria-label="A coil between the N and S poles of a magnet. Current flows along the coil sides and the force pushes one side up and the other down.">
+      <defs>
+        <marker id="fb-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#facc15"/></marker>
+        <marker id="fb-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
+        <marker id="fb-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22c55e"/></marker>
+      </defs>
+      <rect x="20" y="40" width="60" height="120" rx="6" fill="#ef4444"/><text x="50" y="106" text-anchor="middle" font-size="28" fill="#fff">N</text>
+      <rect x="320" y="40" width="60" height="120" rx="6" fill="#3b82f6"/><text x="350" y="106" text-anchor="middle" font-size="28" fill="#fff">S</text>
+      <g stroke="#facc15" stroke-width="2" marker-end="url(#fb-y)">
+        <line x1="90" y1="60" x2="310" y2="60"/><line x1="90" y1="100" x2="310" y2="100"/><line x1="90" y1="140" x2="310" y2="140"/>
+      </g>
+      <rect x="130" y="80" width="140" height="40" fill="none" stroke="#b87333" stroke-width="6"/>
+      <g stroke="#f97316" stroke-width="3" marker-end="url(#fb-o)">
+        <line x1="150" y1="80" x2="200" y2="80"/><line x1="250" y1="120" x2="200" y2="120"/>
+      </g>
+      <g stroke="#22c55e" stroke-width="3" marker-end="url(#fb-g)">
+        <line x1="175" y1="76" x2="175" y2="30"/><line x1="225" y1="124" x2="225" y2="170"/>
+      </g>
+      <text x="200" y="195" text-anchor="middle" font-size="16" fill="currentColor">F = BIL</text>
+    </svg>
+  </div>
+
+  <div id="story">
+    <div id="stage">
+      <canvas id="stage-canvas" aria-label="3D model of a simple DC electric motor"></canvas>
+      <div id="labels" aria-hidden="true"></div>
+      <figure id="lhr" hidden aria-label="Fleming's left-hand rule">
+        <svg viewBox="0 0 220 200" role="img" aria-label="Left hand: first finger points along the field, second finger along the current, thumb gives the motion">
+          <defs>
+            <marker id="lh-y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#facc15"/></marker>
+            <marker id="lh-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
+            <marker id="lh-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22c55e"/></marker>
+          </defs>
+          <path d="M70 120 q-10 -30 10 -45 l40 0 q20 10 15 45 q-5 30 -35 35 q-25 -5 -30 -35z" fill="#e8b68f" stroke="#a16207"/>
+          <g stroke-width="5" fill="none" stroke-linecap="round">
+            <line x1="100" y1="95" x2="190" y2="95" stroke="#facc15" marker-end="url(#lh-y)"/>
+            <line x1="100" y1="110" x2="45" y2="165" stroke="#f97316" marker-end="url(#lh-o)"/>
+            <line x1="95" y1="80" x2="95" y2="15" stroke="#22c55e" marker-end="url(#lh-g)"/>
+          </g>
+          <g font-size="12" fill="currentColor">
+            <text x="105" y="20">thuMb = Motion</text>
+            <text x="135" y="88">First = Field</text>
+            <text x="5" y="190">seCond = Current</text>
+          </g>
+        </svg>
+        <figcaption>Left-hand rule</figcaption>
+      </figure>
+      <div id="gauge" hidden><span>Turning effect</span><div class="bar"><i></i></div></div>
+      <div id="chart-box" hidden><canvas id="chart" aria-label="Chart of speed and current during spin-up"></canvas></div>
+    </div>
+    <main id="content">
+      <section id="hero">
+        <h1>Electric Motor</h1>
+        <p>How electricity and magnets make things spin — and back again.</p>
+        <p class="hint" aria-hidden="true">↓</p>
+      </section>
+      <section id="walkthrough">
+        <article class="panel" data-step="parts">
+          <h2>Meet the motor</h2>
+          <p>Magnets make a field; a coil of wire carries current; the commutator and brushes feed it.</p>
+          <p>The battery pushes current in through one brush, around the coil, and out through the other. The coil and the commutator turn on the shaft; the magnets and brushes stay still.</p>
+        </article>
+        <article class="panel" data-step="force">
+          <h2><span class="num">1.</span> A push on a wire</h2>
+          <p>A wire carrying current across a magnetic field feels a force. Use your left hand: <b>F</b>irst finger along the <b>F</b>ield, se<b>C</b>ond finger along the <b>C</b>urrent, and your thu<b>M</b>b points to the <b>M</b>otion.</p>
+          <p>F = BIL. 20 turns × 0.5 T × 3 A × 0.05 m = <b>1.5 N</b> on each side, in opposite directions, so the coil turns.</p>
+          <p class="note">Arrows show conventional current (+ to −). The electrons in the wire actually flow the other way.</p>
+        </article>
+        <article class="panel" data-step="commutator">
+          <h2><span class="num">2.</span> The commutator</h2>
+          <p>Without a commutator the force flips past vertical and the coil just rocks. The split ring swaps the connections every half turn, so the current reverses and the coil keeps turning.</p>
+          <p class="note">Keep scrolling: first with two plain slip rings, then with the split-ring commutator. The gauge shows the turning effect of one loop.</p>
+        </article>
+        <article class="panel" data-step="backemf">
+          <h2><span class="num">3.</span> Speed and back-EMF</h2>
+          <p>At the start the current is the full 3 A (6 V ÷ 2 Ω). As the coil speeds up it acts as a generator, making a back-EMF that cancels more of the battery voltage, until the speed settles near <b>2700 rpm</b>.</p>
+          <p>Put a load on the shaft and it slows down, the back-EMF falls, and it draws more current to push harder.</p>
+          <p class="note">One loop is drawn so it's clear; the numbers come from a motor with many coils, so its turning force is smooth. Coil inductance is ignored. Shown 20× slower.</p>
+        </article>
+        <article class="panel" data-step="generator">
+          <h2><span class="num">4.</span> Run it backwards: a generator</h2>
+          <p>Spin it and it makes electricity: EMF = kω. At 1000 rpm that's <b>2.1 V</b>. This is regenerative braking.</p>
+          <p>The battery is swapped for a bulb. The faster you turn the shaft, the brighter it glows — and the harder the coil pushes back against you.</p>
+        </article>
+        <article class="panel" data-step="ev">
+          <h2><span class="num">5.</span> Motors in electric cars</h2>
+          <p>Electric-car motors have no brushes: electronics switch the coils. They are about <b>90 %</b> efficient (a petrol engine is about <b>30 %</b>) and give full torque from 0 rpm.</p>
+          <p>Many cars use AC induction motors, where the spinning part has no wires connected to it at all. Compare with <a href="../engine/">how a petrol engine works</a>.</p>
+          <p class="note">Scroll on to the sandbox to drive the motor yourself.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <section id="sandbox" aria-label="Electric motor sandbox">
+    <canvas id="sandbox-canvas" aria-label="Interactive 3D electric motor"></canvas>
+    <div id="sandbox-ui">
+      <h2>Sandbox</h2>
+      <fieldset>
+        <legend>Mode</legend>
+        <label><input type="radio" name="mode" value="motor" checked> Motor</label>
+        <label><input type="radio" name="mode" value="generator"> Generator</label>
+      </fieldset>
+      <div id="motor-controls">
+        <label for="volts">Battery: <output id="volts-out" for="volts">6</output> V</label>
+        <input type="range" id="volts" min="-12" max="12" step="0.5" value="6">
+        <label for="load">Brake load: <output id="load-out" for="load">0</output> mN·m</label>
+        <input type="range" id="load" min="0" max="50" step="1" value="0">
+      </div>
+      <div id="gen-controls" hidden>
+        <label for="crank">Crank speed: <output id="crank-out" for="crank">1000</output> rpm</label>
+        <input type="range" id="crank" min="0" max="3000" step="50" value="1000">
+      </div>
+      <label for="magnet">Magnet strength: <output id="magnet-out" for="magnet">100</output> %</label>
+      <input type="range" id="magnet" min="50" max="150" step="5" value="100">
+      <div class="row"><button id="play" type="button">Pause</button></div>
+      <label class="check"><input type="checkbox" id="show-field" checked> Field arrows</label>
+      <label class="check"><input type="checkbox" id="show-current" checked> Current arrows</label>
+      <label class="check"><input type="checkbox" id="show-force" checked> Force arrows</label>
+      <pre id="readout"></pre>
+      <canvas id="sandbox-chart" aria-label="Rolling chart of speed and current"></canvas>
+      <p class="note">Shown 20× slower · drag to orbit · click a part to learn about it</p>
+    </div>
+    <aside id="part-card" hidden aria-live="polite">
+      <button type="button" aria-label="Close">×</button>
+      <h3></h3>
+      <p></p>
+    </aside>
+  </section>
+</body>
+</html>
